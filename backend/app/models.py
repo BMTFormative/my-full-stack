@@ -1,5 +1,5 @@
 import uuid
-
+from datetime import datetime
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -44,6 +44,9 @@ class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    api_keys: list["AIApiKey"] = Relationship(back_populates="owner", cascade_delete=True)
+    ai_settings: "AISettings" = Relationship(back_populates="owner", cascade_delete=True)
+    credits: "UserCredits" = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
@@ -111,3 +114,32 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=40)
+
+
+
+# AI API Key model
+class AIApiKey(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False, ondelete="CASCADE")
+    provider: str = Field(max_length=255)  # e.g., "openai", "anthropic", etc.
+    key: str = Field(max_length=255)
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=datetime.now)
+    owner: User | None = Relationship(back_populates="api_keys")
+
+# AI Settings model
+class AISettings(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False, ondelete="CASCADE", unique=True)
+    response_level: str = Field(default="standard", max_length=50)  # e.g., "standard", "advanced", "expert"
+    max_tokens: int = Field(default=4000)
+    temperature: float = Field(default=0.7)
+    owner: User | None = Relationship(back_populates="ai_settings")
+
+# User Credits model
+class UserCredits(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", nullable=False, ondelete="CASCADE", unique=True)
+    credits: int = Field(default=0)
+    last_updated: datetime = Field(default_factory=datetime.now)
+    owner: User | None = Relationship(back_populates="credits")

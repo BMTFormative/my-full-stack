@@ -2,7 +2,7 @@ from sqlmodel import Session, create_engine, select
 
 from app import crud
 from app.core.config import settings
-from app.models import User, UserCreate
+from app.models import AISettings, User, UserCreate, UserCredits
 
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
@@ -31,3 +31,20 @@ def init_db(session: Session) -> None:
             is_superuser=True,
         )
         user = crud.create_user(session=session, user_create=user_in)
+    # Create default AI settings for superuser if not exists
+    ai_settings = session.exec(
+        select(AISettings).where(AISettings.user_id == user.id)
+    ).first()
+    if not ai_settings:
+        ai_settings = AISettings(user_id=user.id)
+        session.add(ai_settings)
+    
+    # Create default credits for superuser if not exists
+    user_credits = session.exec(
+        select(UserCredits).where(UserCredits.user_id == user.id)
+    ).first()
+    if not user_credits:
+        user_credits = UserCredits(user_id=user.id, credits=1000)  # Give the superuser some initial credits
+        session.add(user_credits)
+    
+    session.commit()
