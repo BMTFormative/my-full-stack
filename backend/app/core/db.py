@@ -32,12 +32,12 @@ def init_db(session: Session) -> None:
         )
         user = crud.create_user(session=session, user_create=user_in)
     # Create default AI settings for superuser if not exists
-    ai_settings = session.exec(
+    aisettings = session.exec(
         select(AISettings).where(AISettings.user_id == user.id)
     ).first()
-    if not ai_settings:
-        ai_settings = AISettings(user_id=user.id)
-        session.add(ai_settings)
+    if not aisettings:
+        aisettings = AISettings(user_id=user.id)
+        session.add(aisettings)
     
     # Create default credits for superuser if not exists
     user_credits = session.exec(

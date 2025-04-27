@@ -45,7 +45,7 @@ class User(UserBase, table=True):
     hashed_password: str
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
     api_keys: list["AIApiKey"] = Relationship(back_populates="owner", cascade_delete=True)
-    ai_settings: "AISettings" = Relationship(back_populates="owner", cascade_delete=True)
+    aisettings: "AISettings" = Relationship(back_populates="owner", cascade_delete=True)
     credits: "UserCredits" = Relationship(back_populates="owner", cascade_delete=True)
 
 
@@ -134,7 +134,7 @@ class AISettings(SQLModel, table=True):
     response_level: str = Field(default="standard", max_length=50)  # e.g., "standard", "advanced", "expert"
     max_tokens: int = Field(default=4000)
     temperature: float = Field(default=0.7)
-    owner: User | None = Relationship(back_populates="ai_settings")
+    owner: User | None = Relationship(back_populates="aisettings")
 
 # User Credits model
 class UserCredits(SQLModel, table=True):

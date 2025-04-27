@@ -8,7 +8,7 @@ from sqlmodel import Session, select
 from app.api.deps import CurrentUser, SessionDep, get_current_active_superuser
 from app.models import AIApiKey, AISettings, Message, UserCredits, UserPublic
 
-router = APIRouter(prefix="/ai-settings", tags=["ai-settings"])
+router = APIRouter(prefix="/aisettings", tags=["aisettings"])
 
 # API Key endpoints
 @router.get("/api-keys", response_model=List[AIApiKey])
