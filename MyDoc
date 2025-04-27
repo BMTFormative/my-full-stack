@@ -1,0 +1,31 @@
+git clone https://github.com/fastapi/full-stack-fastapi-template.git my-full-stack
+git remote remove origin
+git branch -M main
+git push -u origin main
+cd .\backend\
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+uv sync
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m pip install --upgrade pip
+python app/backend_pre_start.py
+python app/initial_data.py
+
+npm install @chakra-ui/react@latest @emotion/react@latest @emotion/styled@latest framer-motion@latest
+npm install @types/react@latest @types/react-dom@latest
+npm install @chakra-ui/form-control
+npm i @chakra-ui/alert
+npm i @chakra-ui/tabs
+npm i @chakra-ui/table
+npm i @chakra-ui/stat
+npm install recharts
+npm i @chakra-ui/slider
+npm i react-select
+npm run generate:routes
+npm install @chakra-ui/toast
+pip install uvicorn
+alembic revision --autogenerate -m "Add AI settings models"
+alembic upgrade head
+
+. .venv\Scripts\Activate.ps1
+python -m uvicorn app.main:app --reload
