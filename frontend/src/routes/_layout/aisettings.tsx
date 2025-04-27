@@ -1,20 +1,18 @@
-// routes/_layout/aisettings.tsx
 import { Container, Heading } from "@chakra-ui/react";
 import { createFileRoute } from "@tanstack/react-router";
-import React from "react"
-import AISettings from "@/components/AISettings"
+import AiSettings from "@/components/AiSettings/AiSettings";
 
 export const Route = createFileRoute("/_layout/aisettings")({
-  component: AISettingsPage,
+  component: AiSettingsPage,
 });
 
-function AISettingsPage() {
+function AiSettingsPage() {
   return (
     <Container maxW="full">
       <Heading size="lg" pt={12}>
         AI Settings
       </Heading>
-      <AISettings />
+      <AiSettings />
     </Container>
   );
 }
