@@ -32,32 +32,27 @@ interface FormData {
 }
 
 // Create a function to add an API key
-const addApiKey = async (key: string, provider: string): Promise<any> => {
+const addApiKey = async (data: FormData): Promise<any> => {
   const token = localStorage.getItem("access_token");
 
   if (!token) {
     throw new Error("Not authenticated");
   }
 
-  // Based on the error, trying different payload format
-  const payload = {
-    provider: provider,
-    api_key: key,
-  };
-
-  console.log("Sending payload:", payload); // Debug log
-
-  const response = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/v1/aisettings/api-keys`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    }
+  // Create URL with query params
+  const url = new URL(
+    `${import.meta.env.VITE_API_URL}/api/v1/aisettings/api-keys`
   );
+  url.searchParams.append("provider", data.provider);
+  url.searchParams.append("key", data.key);
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!response.ok) {
     if (response.status === 401) {
@@ -102,7 +97,7 @@ const AddApiKey = ({ isOpen, onClose }: AddApiKeyProps) => {
   });
 
   const mutation = useMutation({
-    mutationFn: (data: FormData) => addApiKey(data.key, data.provider),
+    mutationFn: addApiKey,
     onSuccess: () => {
       toast({
         title: "API Key added successfully",
@@ -142,10 +137,7 @@ const AddApiKey = ({ isOpen, onClose }: AddApiKeyProps) => {
   });
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
-    mutation.mutate({
-      provider: data.provider,
-      key: data.key,
-    });
+    mutation.mutate(data);
   };
 
   return (
