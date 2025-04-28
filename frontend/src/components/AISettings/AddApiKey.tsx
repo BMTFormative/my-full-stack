@@ -27,19 +27,26 @@ interface AddApiKeyProps {
 }
 
 interface FormData {
+  provider: string;
   key: string;
 }
 
 // Create a function to add an API key
-const addApiKey = async (key: string): Promise<any> => {
+const addApiKey = async (key: string, provider: string): Promise<any> => {
   const token = localStorage.getItem("access_token");
 
   if (!token) {
     throw new Error("Not authenticated");
   }
 
-  // The API might expect a different structure for the request body
-  // Adjusting to match what the backend expects
+  // Based on the error, trying different payload format
+  const payload = {
+    provider: provider,
+    api_key: key,
+  };
+
+  console.log("Sending payload:", payload); // Debug log
+
   const response = await fetch(
     `${import.meta.env.VITE_API_URL}/api/v1/aisettings/api-keys`,
     {
@@ -48,8 +55,7 @@ const addApiKey = async (key: string): Promise<any> => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      // Try different payload formats based on the backend expectations
-      body: JSON.stringify({ api_key: key }),
+      body: JSON.stringify(payload),
     }
   );
 
@@ -59,7 +65,18 @@ const addApiKey = async (key: string): Promise<any> => {
     } else if (response.status === 422) {
       const errorData = await response.json();
       console.error("API Error Details:", errorData);
-      throw new Error(errorData.detail || "Invalid input format");
+
+      // Extract more detailed error message if available
+      let errorMessage = "Invalid input format";
+      if (errorData && errorData.detail && Array.isArray(errorData.detail)) {
+        errorMessage = errorData.detail
+          .map((err: any) => `${err.loc?.join(".")} - ${err.msg}`)
+          .join(", ");
+      } else if (errorData.detail) {
+        errorMessage = errorData.detail;
+      }
+
+      throw new Error(errorMessage);
     }
     throw new Error("Failed to add API key");
   }
@@ -77,10 +94,15 @@ const AddApiKey = ({ isOpen, onClose }: AddApiKeyProps) => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>();
+  } = useForm<FormData>({
+    defaultValues: {
+      provider: "",
+      key: "",
+    },
+  });
 
   const mutation = useMutation({
-    mutationFn: (data: FormData) => addApiKey(data.key),
+    mutationFn: (data: FormData) => addApiKey(data.key, data.provider),
     onSuccess: () => {
       toast({
         title: "API Key added successfully",
@@ -120,7 +142,10 @@ const AddApiKey = ({ isOpen, onClose }: AddApiKeyProps) => {
   });
 
   const onSubmit: SubmitHandler<FormData> = (data) => {
-    mutation.mutate(data);
+    mutation.mutate({
+      provider: data.provider,
+      key: data.key,
+    });
   };
 
   return (
@@ -138,6 +163,34 @@ const AddApiKey = ({ isOpen, onClose }: AddApiKeyProps) => {
           <DialogBody>
             <Text mb={4}>Enter your AI provider API key below</Text>
             <VStack gap={4}>
+              <Field
+                required
+                invalid={!!errors.provider}
+                errorText={errors.provider?.message}
+                label="Provider"
+              >
+                <select
+                  id="provider"
+                  {...register("provider", {
+                    required: "Provider is required",
+                  })}
+                  className="chakra-input"
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "0.375rem",
+                    borderWidth: "1px",
+                  }}
+                >
+                  <option value="">Select a provider</option>
+                  <option value="openai">OpenAI</option>
+                  <option value="anthropic">Anthropic</option>
+                  <option value="google">Google AI</option>
+                  <option value="mistral">Mistral AI</option>
+                  <option value="other">Other</option>
+                </select>
+              </Field>
+
               <Field
                 required
                 invalid={!!errors.key}

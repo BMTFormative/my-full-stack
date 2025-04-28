@@ -1,10 +1,11 @@
-import { Button, Table, Flex, Text, useDisclosure } from "@chakra-ui/react";
+import { Button, Table, Flex, Text } from "@chakra-ui/react";
 import { FiTrash2 } from "react-icons/fi";
 import { format } from "date-fns";
 
 interface ApiKey {
   id: string;
-  key: string;
+  key?: string;
+  api_key?: string; // Alternative field name that might be used
   created_at: string;
 }
 
@@ -30,7 +31,7 @@ const ApiKeysList = ({ apiKeys, onDelete }: ApiKeysListProps) => {
   }
 
   // Function to mask API key - shows only last 4 characters
-  const maskApiKey = (key: string) => {
+  const maskApiKey = (key: string | undefined) => {
     if (!key) return "••••••••";
     return `••••••••${key.slice(-4)}`;
   };
@@ -57,7 +58,9 @@ const ApiKeysList = ({ apiKeys, onDelete }: ApiKeysListProps) => {
         {apiKeys.map((apiKey) => (
           <Table.Row key={apiKey.id}>
             <Table.Cell>
-              <Text fontFamily="mono">{maskApiKey(apiKey.key)}</Text>
+              <Text fontFamily="mono">
+                {maskApiKey(apiKey.key || apiKey.api_key)}
+              </Text>
             </Table.Cell>
             <Table.Cell>{formatDate(apiKey.created_at)}</Table.Cell>
             <Table.Cell textAlign="right">

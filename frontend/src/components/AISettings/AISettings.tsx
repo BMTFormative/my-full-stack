@@ -21,7 +21,8 @@ import PendingApiKeys from "../Pending/PendingApiKeys";
 
 interface ApiKey {
   id: string;
-  key: string;
+  key?: string;
+  api_key?: string; // Alternative field name that might be used
   created_at: string;
 }
 
