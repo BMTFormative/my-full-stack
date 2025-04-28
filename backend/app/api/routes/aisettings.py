@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 from app.api.deps import CurrentUser, SessionDep, get_current_active_superuser
-from app.models import AIApiKey, AISettings, Message, UserCredits, UserPublic
+from app.models import AIApiKey, AISettings,CreditProfile, Message, UserCredits, UserPublic
 
 router = APIRouter(prefix="/aisettings", tags=["aisettings"])
 
@@ -179,3 +179,49 @@ def update_user_credits_admin(
     session.commit()
     session.refresh(user_credits)
     return user_credits
+@router.get("/credit-profiles", response_model=List[CreditProfile], dependencies=[Depends(get_current_active_superuser)])
+def get_credit_profiles(session: SessionDep) -> Any:
+    """
+    Get all credit profiles (admin only).
+    """
+    statement = select(CreditProfile)
+    profiles = session.exec(statement).all()
+    
+    # If no profiles exist, create the defaults
+    if not profiles:
+        default_profiles = [
+            CreditProfile(name="Basic", amount=100, description="Basic tier with limited features"),
+            CreditProfile(name="Standard", amount=500, description="Standard tier with most features"),
+            CreditProfile(name="Premium", amount=1000, description="Premium tier with all features")
+        ]
+        for profile in default_profiles:
+            session.add(profile)
+        session.commit()
+        profiles = default_profiles
+    
+    return profiles
+
+@router.patch("/credit-profiles/{profile_id}", response_model=CreditProfile, dependencies=[Depends(get_current_active_superuser)])
+def update_credit_profile(
+    *,
+    session: SessionDep,
+    profile_id: uuid.UUID,
+    amount: int,
+    description: str = None
+) -> Any:
+    """
+    Update a credit profile (admin only).
+    """
+    profile = session.get(CreditProfile, profile_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Credit profile not found")
+    
+    profile.amount = amount
+    if description is not None:
+        profile.description = description
+    profile.updated_at = datetime.now()
+    
+    session.add(profile)
+    session.commit()
+    session.refresh(profile)
+    return profile

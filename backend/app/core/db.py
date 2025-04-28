@@ -48,3 +48,21 @@ def init_db(session: Session) -> None:
         session.add(user_credits)
     
     session.commit()
+    # Create default credit profiles if they don't exist
+    from app.models import CreditProfile
+    
+    basic_profile = session.exec(
+        select(CreditProfile).where(CreditProfile.name == "Basic")
+    ).first()
+    
+    if not basic_profile:
+        profiles = [
+            CreditProfile(name="Basic", amount=100, description="Basic tier with limited features"),
+            CreditProfile(name="Standard", amount=500, description="Standard tier with most features"),
+            CreditProfile(name="Premium", amount=1000, description="Premium tier with all features")
+        ]
+        
+        for profile in profiles:
+            session.add(profile)
+        
+        session.commit()

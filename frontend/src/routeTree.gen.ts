@@ -20,6 +20,7 @@ import { Route as LayoutIndexImport } from './routes/_layout/index'
 import { Route as LayoutSettingsImport } from './routes/_layout/settings'
 import { Route as LayoutMarketingImport } from './routes/_layout/marketing'
 import { Route as LayoutItemsImport } from './routes/_layout/items'
+import { Route as LayoutCreditsettingsImport } from './routes/_layout/creditsettings'
 import { Route as LayoutAisettingsImport } from './routes/_layout/aisettings'
 import { Route as LayoutAdminImport } from './routes/_layout/admin'
 
@@ -70,6 +71,11 @@ const LayoutItemsRoute = LayoutItemsImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
+const LayoutCreditsettingsRoute = LayoutCreditsettingsImport.update({
+  path: '/creditsettings',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
 const LayoutAisettingsRoute = LayoutAisettingsImport.update({
   path: '/aisettings',
   getParentRoute: () => LayoutRoute,
@@ -112,6 +118,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutAisettingsImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/creditsettings': {
+      preLoaderRoute: typeof LayoutCreditsettingsImport
+      parentRoute: typeof LayoutImport
+    }
     '/_layout/items': {
       preLoaderRoute: typeof LayoutItemsImport
       parentRoute: typeof LayoutImport
@@ -137,6 +147,7 @@ export const routeTree = rootRoute.addChildren([
   LayoutRoute.addChildren([
     LayoutAdminRoute,
     LayoutAisettingsRoute,
+    LayoutCreditsettingsRoute,
     LayoutItemsRoute,
     LayoutMarketingRoute,
     LayoutSettingsRoute,

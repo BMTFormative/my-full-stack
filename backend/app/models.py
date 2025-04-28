@@ -143,3 +143,11 @@ class UserCredits(SQLModel, table=True):
     credits: int = Field(default=0)
     last_updated: datetime = Field(default_factory=datetime.now)
     owner: User | None = Relationship(back_populates="credits")
+
+class CreditProfile(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    name: str = Field(max_length=50)  # "Basic", "Standard", "Premium"
+    amount: int = Field(default=0)
+    description: str = Field(default=None, max_length=255)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
